@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFramework>net7.0</TargetFramework>
+	  <ImplicitUsings>enable</ImplicitUsings>
+	  <Nullable>enable</Nullable>
+	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+	  <Title>BitSerializer</Title>
+	  <RepositoryUrl>https://github.com/project-nevareth/BitMaster.git</RepositoryUrl>
+	  <Authors>NCKEX</Authors>
+  </PropertyGroup>
+
+</Project>
