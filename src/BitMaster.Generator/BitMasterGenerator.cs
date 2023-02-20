@@ -252,7 +252,7 @@ namespace BitMaster.Generator
 
                 if (propSymbol.Type.Name == "Boolean")
                 {
-                    writer.WriteLine($"result += ({valTypeStr})(({valTypeStr})({propSymbol.Name} ? 1 : 0)) << {propSymbol.Name}_Offset;");
+                    writer.WriteLine($"result += ({valTypeStr})((({valTypeStr})({propSymbol.Name} ? 1 : 0)) << {propSymbol.Name}_Offset);");
                 }
                 else
                 {
