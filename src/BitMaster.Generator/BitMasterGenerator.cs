@@ -256,9 +256,9 @@ namespace BitMaster.Generator
                 }
                 else
                 {
-                    writer.WriteLine($"{valTypeStr} {propSymbol.Name}_Value = ({valTypeStr})(({valTypeStr}){propSymbol.Name}) << {propSymbol.Name}_Offset;");
+                    writer.WriteLine($"{valTypeStr} {propSymbol.Name}_Value = ({valTypeStr})((({valTypeStr}){propSymbol.Name}) << {propSymbol.Name}_Offset);");
 
-                    writer.WriteLine($"if ((({propSymbol.Name}_Value & {propSymbol.Name}_Mask) >> {propSymbol.Name}_Offset) != {propSymbol.Name})");
+                    writer.WriteLine($"if ((({valTypeStr})({propSymbol.Name}_Value & {propSymbol.Name}_Mask) >> {propSymbol.Name}_Offset) != {propSymbol.Name})");
                     writer.WriteLine("{");
                     writer.Indent++;
                     writer.WriteLine($"throw new Exception($\"'{propSymbol.Name}' exceeded mask value\");");

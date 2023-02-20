@@ -39,7 +39,7 @@
                 Field1 = true,
                 Field2 = true,
                 Field3 = false,
-                Field4 = true
+                Field4 = 7
             };
 
             var serialized = boolStr.Serialize();
