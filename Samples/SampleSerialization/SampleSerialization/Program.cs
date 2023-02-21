@@ -4,14 +4,18 @@
     {
         static void Main(string[] args)
         {
-            TestValues();
             TestBool();
+            TestValues();
+            TestValuesExtended();
+            TestValuesExtendedWithoutKeepBits();
 
             Console.ReadLine();
         }
 
         private static void TestValues()
         {
+            Console.WriteLine($"============================== {nameof(TestValues)} ==============================");
+
             var structInstance = new SampleStruct
             {
                 Field_One = uint.MaxValue,
@@ -32,8 +36,54 @@
             Console.WriteLine($"Field_Three: {deserializedStruct.Field_Three}");
         }
 
+        private static void TestValuesExtended()
+        {
+            Console.WriteLine($"============================== {nameof(TestValuesExtended)} ==============================");
+
+            var structInstance = new SampleExtendedStruct
+            {
+                FirstValue = 33556158,
+                SecondValue = 70
+            };
+
+            var serialized = structInstance.Serialize();
+
+            Console.WriteLine($"Serialized Struct: {serialized}");
+            Console.WriteLine();
+
+            var deserializedStruct = SampleExtendedStruct.Deserialize(in serialized);
+
+            Console.WriteLine("Deserialized Struct");
+            Console.WriteLine($"FirstValue: {deserializedStruct.FirstValue}");
+            Console.WriteLine($"SecondValue: {deserializedStruct.SecondValue}");
+        }
+
+        private static void TestValuesExtendedWithoutKeepBits()
+        {
+            Console.WriteLine($"============================== {nameof(TestValuesExtendedWithoutKeepBits)} ==============================");
+
+            var structInstance = new SampleExtendedWithoutKeepStruct
+            {
+                FirstValue = 9,
+                SecondValue = 999
+            };
+
+            var serialized = structInstance.Serialize();
+
+            Console.WriteLine($"Serialized Struct: {serialized}");
+            Console.WriteLine();
+
+            var deserializedStruct = SampleExtendedWithoutKeepStruct.Deserialize(in serialized);
+
+            Console.WriteLine("Deserialized Struct");
+            Console.WriteLine($"FirstValue: {deserializedStruct.FirstValue}");
+            Console.WriteLine($"SecondValue: {deserializedStruct.SecondValue}");
+        }
+
         private static void TestBool()
         {
+            Console.WriteLine($"============================== {nameof(TestBool)} ==============================");
+
             var boolStr = new SampleBooleanStruct
             {
                 Field1 = true,
