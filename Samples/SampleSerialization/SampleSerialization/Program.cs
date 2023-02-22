@@ -8,6 +8,7 @@
             TestValues();
             TestValuesExtended();
             TestValuesExtendedWithoutKeepBits();
+            TestUnion();
 
             Console.ReadLine();
         }
@@ -104,6 +105,29 @@
             Console.WriteLine($"Field2: {deserializedStruct.Field2}");
             Console.WriteLine($"Field3: {deserializedStruct.Field3}");
             Console.WriteLine($"Field4: {deserializedStruct.Field4}");
+        }
+
+        private static void TestUnion()
+        {
+            Console.WriteLine($"============================== {nameof(TestUnion)} ==============================");
+
+            var structInstance = new SampleUnionStruct
+            {
+                All = 150,
+                LastVal = 77
+            };
+
+            var serialized = structInstance.Serialize();
+
+            Console.WriteLine($"Serialized Struct: {serialized}");
+            Console.WriteLine();
+
+            var deserializedStruct = SampleUnionStruct.Deserialize(in serialized);
+
+            Console.WriteLine("Deserialized Struct");
+            Console.WriteLine($"All: {deserializedStruct.All}");
+            Console.WriteLine($"Half_One_All: {deserializedStruct.Half_One_All}");
+            Console.WriteLine($"Half_Two_All: {deserializedStruct.Half_Two_All}");
         }
     }
 }

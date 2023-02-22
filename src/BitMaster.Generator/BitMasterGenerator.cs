@@ -174,10 +174,17 @@ namespace BitMaster.Generator
 
         private void GenerateMasksSection(IndentedTextWriter writer, StructGenModel structGenModel)
         {
-            byte offset = 0;
+            byte incrementalOffset = 0;
 
             foreach (var propertyModel in structGenModel.Properties)
             {
+                byte offset = incrementalOffset;
+
+                if (propertyModel.Offset >= 0)
+                {
+                    offset = (byte)propertyModel.Offset;
+                }
+
                 var propertyMask = CalculateMask(in offset, propertyModel.Length);
 
                 writer.WriteLine($"private const byte {propertyModel.PropertySymbol.Name}_Offset = {offset};");
@@ -193,7 +200,7 @@ namespace BitMaster.Generator
                     writer.WriteLine($"private const {structGenModel.StructValueTypeName} {propertyModel.PropertySymbol.Name}_ExtendedMask = {extendedMask};");
                 }
 
-                offset += (byte)(propertyModel.Length + propertyModel.SkipNextLength);
+                incrementalOffset = (byte)Math.Max(incrementalOffset, offset + propertyModel.Length + propertyModel.SkipNextLength);
 
                 if (offset > structGenModel.BitCapacity)
                 {
@@ -265,31 +272,31 @@ namespace BitMaster.Generator
 
                 if (propSymbol.Type.Name == "Boolean")
                 {
-                    writer.WriteLine($"result += ({returnValType})((({returnValType})({propSymbol.Name} ? 1 : 0)) << {propSymbol.Name}_Offset);");
+                    writer.WriteLine($"result |= ({returnValType})(((({returnValType})({propSymbol.Name} ? 1 : 0)) << {propSymbol.Name}_Offset) & {propSymbol.Name}_Mask);");
                     writer.WriteLine();
                     continue;
                 }
 
-                if (propertyModel.BitExtensionAttributeData != null && propertyModel.KeepExtensionBits == false)
+                if (propertyModel.BitExtensionAttributeData != null)
                 {
-                    writer.WriteLine($"{returnValType} {propSymbol.Name}_FirstPart_Value = ({returnValType})(({returnValType}){propSymbol.Name} & {propSymbol.Name}_Mask);");
-                    writer.WriteLine($"{returnValType} {propSymbol.Name}_SecondPart_Value = ({returnValType})((({returnValType})({returnValType}){propSymbol.Name} >> {propertyModel.Length})) << {propertyModel.ExtensionOffset};");
-                    writer.WriteLine($"result += ({returnValType})({propSymbol.Name}_FirstPart_Value + {propSymbol.Name}_SecondPart_Value);");
+                    if (propertyModel.KeepExtensionBits == false)
+                    {
+                        writer.WriteLine($"{returnValType} {propSymbol.Name}_FirstPart_Value = ({returnValType})(({returnValType}){propSymbol.Name} & {propSymbol.Name}_Mask);");
+                        writer.WriteLine($"{returnValType} {propSymbol.Name}_SecondPart_Value = ({returnValType})((({returnValType})({returnValType}){propSymbol.Name} >> {propertyModel.Length})) << {propertyModel.ExtensionOffset};");
+                        writer.WriteLine($"result |= ({returnValType})(({propSymbol.Name}_FirstPart_Value + {propSymbol.Name}_SecondPart_Value) & {propSymbol.Name}_ExtendedMask);");
+                        writer.WriteLine();
+                        continue;
+                    }
+
+                    writer.WriteLine($"{returnValType} {propSymbol.Name}_Value = ({returnValType})((({returnValType}){propSymbol.Name}) << {propSymbol.Name}_Offset);");
+                    writer.WriteLine($"result |= ({returnValType})({propSymbol.Name}_Value & {propSymbol.Name}_ExtendedMask);");
                     writer.WriteLine();
                     continue;
                 }
 
                 writer.WriteLine($"{returnValType} {propSymbol.Name}_Value = ({returnValType})((({returnValType}){propSymbol.Name}) << {propSymbol.Name}_Offset);");
-                writer.WriteLine($"result += {propSymbol.Name}_Value;");
+                writer.WriteLine($"result |= ({returnValType})({propSymbol.Name}_Value & {propSymbol.Name}_Mask);");
                 writer.WriteLine();
-
-                //writer.WriteLine($"if ((({valTypeStr})({propSymbol.Name}_Value & {propSymbol.Name}_Mask) >> {propSymbol.Name}_Offset) != {propSymbol.Name})");
-                //writer.WriteLine("{");
-                //writer.Indent++;
-                //writer.WriteLine($"throw new Exception($\"'{propSymbol.Name}' exceeded mask value\");");
-                //writer.Indent--;
-                //writer.WriteLine("}");
-                //writer.WriteLine();
             }
 
             writer.WriteLine("return result;");
@@ -358,6 +365,7 @@ namespace BitMaster.Generator
             public AttributeData BitAttributeData { get; set; }
             public AttributeData BitExtensionAttributeData { get; set; }
             public byte Length { get; }
+            public sbyte Offset { get; }
             public byte SkipNextLength { get; }
             public byte ExtensionOffset { get; }
             public byte ExtensionLength { get; }
@@ -374,14 +382,16 @@ namespace BitMaster.Generator
                 ValueTypeName = propSymbol.Type.ToDisplayString();
                 BitAttributeData = bitAttributeData;
                 BitExtensionAttributeData = bitExtensionAttributeData;
-
+                
                 var length = byte.Parse(bitAttributeData.NamedArguments.FirstOrDefault(x => x.Key == "Length").Value.Value?.ToString() ?? "1");
+                var offset = sbyte.Parse(bitAttributeData.NamedArguments.FirstOrDefault(x => x.Key == "Offset").Value.Value?.ToString() ?? "-1");
                 var skipNextLength = byte.Parse(bitAttributeData.NamedArguments.FirstOrDefault(x => x.Key == "SkipNextLength").Value.Value?.ToString() ?? "0");
                 var extensionOffset = byte.Parse(bitExtensionAttributeData?.NamedArguments.FirstOrDefault(x => x.Key == "Offset").Value.Value?.ToString() ?? "0");
                 var extensionLength = byte.Parse(bitExtensionAttributeData?.NamedArguments.FirstOrDefault(x => x.Key == "Length").Value.Value?.ToString() ?? "0");
                 var keepExtensionBits = bool.Parse(bitExtensionAttributeData?.NamedArguments.FirstOrDefault(x => x.Key == "KeepExtensionBits").Value.Value?.ToString() ?? "false");
 
                 Length = length;
+                Offset = offset;
                 SkipNextLength = skipNextLength;
                 ExtensionOffset = extensionOffset;
                 ExtensionLength = extensionLength;
