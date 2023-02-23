@@ -19,7 +19,7 @@
 
             var structInstance = new SampleStruct
             {
-                Field_One = uint.MaxValue,
+                Field_One = -5,
                 Field_Two = true,
                 Field_Three = ushort.MaxValue
             };

@@ -161,7 +161,7 @@ namespace BitMaster.Generator
             GenerateSerializeMethodSection(writer, structGenModel);
             writer.WriteLine();
 
-            GenerateImplicitOperator(writer, structGenModel);
+            GenerateImplicitOperators(writer, structGenModel);
 
             writer.Indent--;
             writer.WriteLine("}");
@@ -305,8 +305,19 @@ namespace BitMaster.Generator
             writer.WriteLine("}");
         }
 
-        private void GenerateImplicitOperator(IndentedTextWriter writer, StructGenModel structGenModel)
+        private void GenerateImplicitOperators(IndentedTextWriter writer, StructGenModel structGenModel)
         {
+            writer.WriteLine($"public static implicit operator {structGenModel.StructSymbol.Name}({structGenModel.StructValueTypeName} value)");
+            writer.WriteLine("{");
+            writer.Indent++;
+
+            writer.WriteLine($"return {structGenModel.StructSymbol.Name}.Deserialize(value);");
+
+            writer.Indent--;
+            writer.WriteLine("}");
+
+            writer.WriteLine();
+
             writer.WriteLine($"public static implicit operator {structGenModel.StructValueTypeName}({structGenModel.StructSymbol.Name} value)");
             writer.WriteLine("{");
             writer.Indent++;
